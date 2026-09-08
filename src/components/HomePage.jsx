@@ -12,6 +12,35 @@ const TABS = [
   { id: 'support-chat', label: 'Support Chat' },
 ];
 
+const SLOGANS = [
+  "You don't have to do this alone.",
+  'Real parents. Real stories. Real support.',
+  'Small wins count — we see you.',
+  'Raising kids takes a village. Welcome to yours.',
+  'Ask anything, anytime — judgment-free, always.',
+];
+
+const HOME_FEATURES = [
+  {
+    tab: 'discussions',
+    icon: '\u{1F4AC}',
+    title: 'Join the Conversation',
+    description: 'Swap stories and advice with other caregivers.',
+  },
+  {
+    tab: 'resources',
+    icon: '\u{1F4DA}',
+    title: 'Explore Resources',
+    description: 'Hand-picked articles and guides, curated for you.',
+  },
+  {
+    tab: 'support-chat',
+    icon: '\u{1F916}',
+    title: 'Get Support Anytime',
+    description: '24/7 AI chat for quick answers and a listening ear.',
+  },
+];
+
 const inputCls =
   'border border-gray-300 rounded-md px-2.5 py-2 text-sm text-gray-800 bg-white w-full focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 appearance-none';
 const labelCls = 'text-sm text-gray-700 font-medium';
@@ -26,7 +55,15 @@ const HomePage = () => {
   const [saving, setSaving] = useState(false);
   const [expandedUserIds, setExpandedUserIds] = useState(new Set());
   const [activeTab, setActiveTab] = useState('home');
+  const [sloganIndex, setSloganIndex] = useState(0);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setSloganIndex((prev) => (prev + 1) % SLOGANS.length);
+    }, 4500);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     const userData = localStorage.getItem('user');
@@ -165,13 +202,35 @@ const HomePage = () => {
 
         {activeTab === 'home' && (
           <div className="max-w-3xl mx-auto">
-            <div className="text-center mb-6">
-              <h2 className="text-gray-800 text-2xl sm:text-3xl lg:text-4xl font-bold mb-3">
-                Welcome to our platform
-              </h2>
-              <p className="text-gray-500 text-base sm:text-lg">
-                You&apos;re now part of a supportive community of caregivers and single parents.
-              </p>
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white px-6 py-10 sm:px-10 sm:py-14 mb-6 shadow-lg">
+              <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-2xl pointer-events-none" />
+              <div className="absolute -bottom-12 -left-8 w-48 h-48 bg-white/10 rounded-full blur-2xl pointer-events-none" />
+              <div className="relative text-center">
+                <p className="uppercase tracking-widest text-xs sm:text-sm font-semibold text-blue-100 mb-2">
+                  Caregiver Platform
+                </p>
+                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3">
+                  Welcome back, {user.alias || user.name}! 👋
+                </h2>
+                <p className="text-blue-50 text-base sm:text-lg max-w-xl mx-auto min-h-[1.75rem]">
+                  {SLOGANS[sloganIndex]}
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+              {HOME_FEATURES.map((feature) => (
+                <button
+                  key={feature.tab}
+                  type="button"
+                  onClick={() => setActiveTab(feature.tab)}
+                  className="text-left bg-white rounded-xl shadow-sm hover:shadow-lg p-5 border border-gray-100 hover:border-blue-200 transition-all hover:-translate-y-0.5 cursor-pointer"
+                >
+                  <span className="text-3xl">{feature.icon}</span>
+                  <h4 className="mt-3 mb-1 text-gray-800 font-semibold">{feature.title}</h4>
+                  <p className="m-0 text-sm text-gray-500">{feature.description}</p>
+                </button>
+              ))}
             </div>
 
             <div className="bg-white rounded-xl shadow-md p-4 sm:p-6 lg:p-8">
