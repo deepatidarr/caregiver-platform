@@ -4,9 +4,27 @@ A community platform for single caregivers to connect, share resources, and get 
 
 ## Features
 
-- **Discussions**: topic-based community forums with replies and likes
+- **Home**: personalized welcome hero with rotating community slogans and quick links into the other tabs
+- **Discussions**: topic-based community forums with replies and likes; non-admins can request new topics
 - **Resources**: admin-curated links and guides
 - **AI Support Chat**: RAG-powered chatbot that answers questions using real community posts and resources
+- **Admin tab**: visible only to users with `admin: true`; review, approve, reject, or request edits on topic requests submitted by other users
+
+## Live Environment
+
+| Piece    | URL |
+|----------|-----|
+| Frontend | https://caregiver-platform-alpha.vercel.app |
+| Backend  | https://caregiver-platform-5m1z.onrender.com |
+| Database | MongoDB Atlas (`caregiver-app` database) |
+
+The Render free tier spins down after ~15 minutes of inactivity — the first request after
+idling can take 30–60 seconds while it wakes back up.
+
+**Deploying changes**: both Vercel and Render auto-deploy from the `main` branch of
+[`deepatidarr/caregiver-platform`](https://github.com/deepatidarr/caregiver-platform) (a
+fork of the upstream project repo). Pushing to the upstream repo alone will **not** trigger
+a deploy — push (or sync the fork) to `deepatidarr/caregiver-platform` specifically.
 
 ## Tech Stack
 
@@ -130,3 +148,50 @@ ordering only). Hosts that don't build from a Dockerfile can use `npm start`
 - If your backend host sleeps when idle, ping `/api/health` periodically to avoid the cold-start model reload.
 
 See [SETUP_GUIDE.md](SETUP_GUIDE.md) for step-by-step Atlas and environment setup.
+
+## Seed / Test Data
+
+Discussions and Resources were empty ahead of real content from the HR team, so
+[`server/seed.js`](server/seed.js) (`npm run seed`) populates the database with
+realistic filler content. It's idempotent — safe to re-run, it skips anything that
+already exists by email/name/title. It creates:
+
+- **5 placeholder user accounts** (one admin), used as authors for the seed posts/replies
+- **8 discussion topics** with realistic posts and replies (new-parent support, single
+  parenting, co-parenting, caregiver burnout, financial planning, childcare/school,
+  mental health, parenting teens)
+- **10 real external resources** from reputable organizations (AAP's HealthyChildren.org,
+  Zero to Three, Child Mind Institute, SAMHSA's National Helpline, the National
+  Domestic Violence Hotline, 211, and others)
+
+```bash
+MONGODB_URI=<your connection string> npm run seed
+```
+
+**Admin test login** (created by the seed script): `seed.community@example.com` /
+`SeedUser123!`. Rotate the password or delete the seed accounts before onboarding real
+users — this is placeholder content, not meant to ship to production long-term.
+
+## Recent Work Log
+
+A running log of what's been done in this project so far, most recent first:
+
+- **Admin tab**: moved topic-request review/approve/reject out of the Discussions tab
+  into a dedicated "Admin" tab in the main nav, visible only to `admin: true` users.
+- **Seed script**: added `server/seed.js` (see [Seed / Test Data](#seed--test-data)
+  above) to fill Discussions and Resources with realistic placeholder content.
+- **Home tab refresh**: replaced the plain welcome text with a gradient hero banner,
+  rotating community slogans, and three clickable quick-link cards to Discussions,
+  Resources, and Support Chat.
+- **Production deployment fixed end-to-end**: diagnosed and resolved three separate
+  issues that were blocking login/signup on the live site — (1) the frontend was still
+  calling `http://localhost:5000` in production because `VITE_API_URL` hadn't been
+  rebuilt in; (2) the backend's `CORS_ORIGINS` was set to a value that didn't match the
+  real Vercel domain, causing every browser request to 500; (3) Vercel and Render were
+  both deploying from a stale pinned commit because "Redeploy" rebuilds the same commit
+  rather than pulling the branch tip.
+- **Discovered the real deploy target**: both Vercel and Render deploy from
+  `deepatidarr/caregiver-platform` (a fork), not the upstream project repo — pushes now
+  go directly to the fork so changes deploy automatically.
+- **Initial hosting setup**: MongoDB Atlas (free M0 cluster) for the database, Render
+  for the backend, Vercel for the frontend — see [Live Environment](#live-environment).
