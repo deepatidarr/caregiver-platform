@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import TopicRequestForm from './TopicRequestForm';
 import UserTopicRequestList from './UserTopicRequestList';
-import AdminTopicRequestList from './AdminTopicRequestList';
 import { API_BASE } from '../config';
 
 const inputCls =
@@ -160,7 +159,6 @@ const Discussions = ({ user }) => {
     }
   };
 
-  const handleRequestProcessed = () => { fetchTopics(); };
   const handleRequestCreated = () => {};
 
   const handleAddReply = async (postId, content) => {
@@ -285,7 +283,6 @@ const Discussions = ({ user }) => {
         </form>
       )}
 
-      {isAdmin && <AdminTopicRequestList user={user} onRequestProcessed={handleRequestProcessed} />}
       {!isAdmin && <TopicRequestForm user={user} onRequestCreated={handleRequestCreated} />}
 
       {/* Main content: sidebar + posts */}

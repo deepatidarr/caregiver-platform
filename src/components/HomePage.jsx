@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Discussions from './Discussions';
 import Resources from './Resources';
 import SupportChat from './SupportChat';
+import AdminTopicRequestList from './AdminTopicRequestList';
 import { API_BASE } from '../config';
 
 const TABS = [
@@ -185,7 +186,7 @@ const HomePage = () => {
       <main className="w-full px-4 sm:px-6 lg:px-8 py-6">
         {/* Tab navigation — horizontally scrollable on mobile */}
         <div className="flex border-b-2 border-gray-200 mb-6 -mx-4 px-4 sm:mx-0 sm:px-0 overflow-x-auto">
-          {TABS.map(({ id, label }) => (
+          {(user.admin ? [...TABS, { id: 'admin', label: 'Admin' }] : TABS).map(({ id, label }) => (
             <button
               key={id}
               className={`shrink-0 bg-transparent border-0 border-b-[3px] px-4 sm:px-6 py-3 text-sm sm:text-base font-semibold cursor-pointer transition-all whitespace-nowrap ${
@@ -285,6 +286,13 @@ const HomePage = () => {
         {activeTab === 'discussions' && <Discussions user={user} />}
         {activeTab === 'resources' && <Resources user={user} />}
         {activeTab === 'support-chat' && <SupportChat user={user} />}
+        {activeTab === 'admin' && user.admin && (
+          <div className="max-w-3xl mx-auto bg-white rounded-xl shadow-sm p-4 sm:p-6">
+            <h2 className="text-gray-800 text-xl sm:text-2xl font-bold mb-1">Admin</h2>
+            <p className="text-gray-500 text-sm mb-4">Review topic requests submitted by other users.</p>
+            <AdminTopicRequestList user={user} />
+          </div>
+        )}
       </main>
 
       {/* Right-side slide-out profile panel */}
