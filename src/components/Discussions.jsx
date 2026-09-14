@@ -100,12 +100,34 @@ const Discussions = ({ user }) => {
       if (data.success) {
         setPosts([data.post, ...posts]);
         setNewPost({ content: '' });
+        if (data.post.status !== 'Approved') {
+          alert('Your post was submitted and is awaiting admin approval.');
+        }
       } else {
         alert(data.message || 'Failed to create post');
       }
     } catch (error) {
       console.error('Error creating post:', error);
       alert('Failed to create post');
+    }
+  };
+
+  const handleDeletePost = async (postId) => {
+    if (!window.confirm('Delete this post? This cannot be undone.')) return;
+    try {
+      const response = await fetch(`${API_BASE}/api/discussions/posts/${postId}`, {
+        method: 'DELETE',
+        headers: { 'user-id': user.id }
+      });
+      const data = await response.json();
+      if (data.success) {
+        setPosts(posts.filter(post => post._id !== postId));
+      } else {
+        alert(data.message || 'Failed to delete post');
+      }
+    } catch (error) {
+      console.error('Error deleting post:', error);
+      alert('Failed to delete post');
     }
   };
 
@@ -174,12 +196,38 @@ const Discussions = ({ user }) => {
           post._id === postId ? { ...post, replies: [...post.replies, data.reply] } : post
         ));
         setNewComments({ ...newComments, [postId]: '' });
+        if (data.reply.status !== 'Approved') {
+          alert('Your reply was submitted and is awaiting admin approval.');
+        }
       } else {
         alert(data.message || 'Failed to add reply');
       }
     } catch (error) {
       console.error('Error adding reply:', error);
       alert('Failed to add reply');
+    }
+  };
+
+  const handleDeleteReply = async (postId, replyId) => {
+    if (!window.confirm('Delete this reply? This cannot be undone.')) return;
+    try {
+      const response = await fetch(`${API_BASE}/api/discussions/posts/${postId}/replies/${replyId}`, {
+        method: 'DELETE',
+        headers: { 'user-id': user.id }
+      });
+      const data = await response.json();
+      if (data.success) {
+        setPosts(posts.map(post =>
+          post._id === postId
+            ? { ...post, replies: post.replies.filter(reply => reply._id !== replyId) }
+            : post
+        ));
+      } else {
+        alert(data.message || 'Failed to delete reply');
+      }
+    } catch (error) {
+      console.error('Error deleting reply:', error);
+      alert('Failed to delete reply');
     }
   };
 
@@ -368,6 +416,11 @@ const Discussions = ({ user }) => {
                         <span className="font-semibold text-gray-800">{post.authorName}</span>
                         <span className="text-gray-500 text-sm">{new Date(post.createdAt).toLocaleDateString()}</span>
                       </div>
+                      {post.status !== 'Approved' && (
+                        <span className="inline-block mb-2 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-yellow-50 text-yellow-600 border border-yellow-400 uppercase tracking-wide">
+                          Pending approval
+                        </span>
+                      )}
                       <div className="text-gray-700 leading-relaxed mb-4">{post.content}</div>
                       <div className="flex flex-wrap gap-3 items-center">
                         <button
@@ -382,6 +435,14 @@ const Discussions = ({ user }) => {
                         >
                           💬 {post.replies.length} replies
                         </button>
+                        {isAdmin && (
+                          <button
+                            className="bg-transparent border border-gray-300 px-3 py-2 rounded-full cursor-pointer text-sm flex items-center gap-1.5 text-red-500 hover:bg-red-50 hover:border-red-400 transition-all ml-auto"
+                            onClick={() => handleDeletePost(post._id)}
+                          >
+                            Delete
+                          </button>
+                        )}
                       </div>
 
                       {expandedPosts.has(post._id) && (
@@ -410,13 +471,28 @@ const Discussions = ({ user }) => {
                                   <span className="font-semibold text-gray-800 text-sm">{reply.authorName}</span>
                                   <span className="text-gray-500 text-xs">{new Date(reply.createdAt).toLocaleDateString()}</span>
                                 </div>
+                                {reply.status !== 'Approved' && (
+                                  <span className="inline-block mb-2 px-2 py-0.5 rounded-full text-xs font-semibold bg-yellow-50 text-yellow-600 border border-yellow-400 uppercase tracking-wide">
+                                    Pending approval
+                                  </span>
+                                )}
                                 <div className="text-gray-700 leading-snug mb-2.5 text-sm">{reply.content}</div>
-                                <button
-                                  className="bg-transparent border border-gray-300 px-3 py-1.5 rounded-full cursor-pointer text-sm flex items-center gap-1.5 hover:bg-gray-100 hover:border-blue-400 text-black transition-all"
-                                  onClick={() => handleLikeReply(post._id, reply._id)}
-                                >
-                                  ❤️ {reply.likeCount || 0}
-                                </button>
+                                <div className="flex items-center gap-2">
+                                  <button
+                                    className="bg-transparent border border-gray-300 px-3 py-1.5 rounded-full cursor-pointer text-sm flex items-center gap-1.5 hover:bg-gray-100 hover:border-blue-400 text-black transition-all"
+                                    onClick={() => handleLikeReply(post._id, reply._id)}
+                                  >
+                                    ❤️ {reply.likeCount || 0}
+                                  </button>
+                                  {isAdmin && (
+                                    <button
+                                      className="bg-transparent border border-gray-300 px-3 py-1.5 rounded-full cursor-pointer text-sm text-red-500 hover:bg-red-50 hover:border-red-400 transition-all ml-auto"
+                                      onClick={() => handleDeleteReply(post._id, reply._id)}
+                                    >
+                                      Delete
+                                    </button>
+                                  )}
+                                </div>
                               </div>
                             ))}
                           </div>

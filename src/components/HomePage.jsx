@@ -4,6 +4,7 @@ import Discussions from './Discussions';
 import Resources from './Resources';
 import SupportChat from './SupportChat';
 import AdminTopicRequestList from './AdminTopicRequestList';
+import AdminPostModerationList from './AdminPostModerationList';
 import { API_BASE } from '../config';
 
 const TABS = [
@@ -289,8 +290,11 @@ const HomePage = () => {
         {activeTab === 'admin' && user.admin && (
           <div className="max-w-3xl mx-auto bg-white rounded-xl shadow-sm p-4 sm:p-6">
             <h2 className="text-gray-800 text-xl sm:text-2xl font-bold mb-1">Admin</h2>
-            <p className="text-gray-500 text-sm mb-4">Review topic requests submitted by other users.</p>
+            <p className="text-gray-500 text-sm mb-4">Review content submitted by other users.</p>
             <AdminTopicRequestList user={user} />
+            <div className="mt-8 pt-6 border-t border-gray-200">
+              <AdminPostModerationList user={user} />
+            </div>
           </div>
         )}
       </main>

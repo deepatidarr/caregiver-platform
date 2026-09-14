@@ -129,17 +129,24 @@ router.get('/topics/:topicId/posts', async (req, res) => {
       return res.status(404).json({ success: false, message: 'Topic not found' });
     }
     
-    const posts = await Post.find({ topicName: topic.name })
+    const posts = await Post.find({ topicName: topic.name, status: 'Approved' })
       .populate('author', 'name alias')
       .sort({ createdAt: -1 })
       .limit(limit * 1)
       .skip((page - 1) * limit);
 
-    const total = await Post.countDocuments({ topicName: topic.name });
-    
+    const total = await Post.countDocuments({ topicName: topic.name, status: 'Approved' });
+
+    // Only surface approved replies — pending ones stay hidden until moderated
+    const visiblePosts = posts.map((post) => {
+      const obj = post.toObject();
+      obj.replies = obj.replies.filter((reply) => reply.status === 'Approved');
+      return obj;
+    });
+
     res.json({
       success: true,
-      posts,
+      posts: visiblePosts,
       totalPages: Math.ceil(total / limit),
       currentPage: page
     });
@@ -178,7 +185,8 @@ router.post('/topics/:topicId/posts', requireAuth, async (req, res) => {
       author: req.userId,
       authorName: user.alias || user.name,
       topic: topicId,
-      topicName: topic.name
+      topicName: topic.name,
+      status: user.admin ? 'Approved' : 'Pending'
     });
 
     console.log('[Create Post] Post object created, saving...');
@@ -256,12 +264,13 @@ router.post('/posts/:postId/replies', requireAuth, async (req, res) => {
     const reply = {
       content: content.trim(),
       author: req.userId,
-      authorName: user.alias || user.name
+      authorName: user.alias || user.name,
+      status: user.admin ? 'Approved' : 'Pending'
     };
 
     post.replies.push(reply);
     await post.save();
-    
+
     res.status(201).json({ success: true, reply: post.replies[post.replies.length - 1] });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Failed to add reply' });
@@ -285,10 +294,110 @@ router.post('/posts/:postId/replies/:replyId/like', requireAuth, async (req, res
     // Simply increment the like count
     reply.likeCount += 1;
     await post.save();
-    
+
     res.json({ success: true, likeCount: reply.likeCount });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Failed to update reply like' });
+  }
+});
+
+// Get all pending posts and replies awaiting moderation (admin only)
+router.get('/moderation/pending', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const pendingPosts = await Post.find({ status: 'Pending' })
+      .populate('author', 'name alias')
+      .sort({ createdAt: -1 });
+
+    const postsWithPendingReplies = await Post.find({ 'replies.status': 'Pending' })
+      .populate('author', 'name alias')
+      .populate('replies.author', 'name alias')
+      .sort({ createdAt: -1 });
+
+    const pendingReplies = [];
+    postsWithPendingReplies.forEach((post) => {
+      post.replies.forEach((reply) => {
+        if (reply.status === 'Pending') {
+          pendingReplies.push({
+            postId: post._id,
+            postContent: post.content,
+            topicName: post.topicName,
+            reply
+          });
+        }
+      });
+    });
+
+    res.json({ success: true, pendingPosts, pendingReplies });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to fetch pending content' });
+  }
+});
+
+// Approve a pending post (admin only)
+router.post('/posts/:postId/approve', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.postId);
+    if (!post) {
+      return res.status(404).json({ success: false, message: 'Post not found' });
+    }
+    post.status = 'Approved';
+    await post.save();
+    res.json({ success: true, post });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to approve post' });
+  }
+});
+
+// Delete a post outright — used both to reject a pending post and to remove
+// already-approved content (admin only)
+router.delete('/posts/:postId', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const post = await Post.findByIdAndDelete(req.params.postId);
+    if (!post) {
+      return res.status(404).json({ success: false, message: 'Post not found' });
+    }
+    res.json({ success: true, message: 'Post deleted' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to delete post' });
+  }
+});
+
+// Approve a pending reply (admin only)
+router.post('/posts/:postId/replies/:replyId/approve', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.postId);
+    if (!post) {
+      return res.status(404).json({ success: false, message: 'Post not found' });
+    }
+    const reply = post.replies.id(req.params.replyId);
+    if (!reply) {
+      return res.status(404).json({ success: false, message: 'Reply not found' });
+    }
+    reply.status = 'Approved';
+    await post.save();
+    res.json({ success: true, reply });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to approve reply' });
+  }
+});
+
+// Delete a reply outright — used both to reject a pending reply and to remove
+// already-approved content (admin only)
+router.delete('/posts/:postId/replies/:replyId', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.postId);
+    if (!post) {
+      return res.status(404).json({ success: false, message: 'Post not found' });
+    }
+    const reply = post.replies.id(req.params.replyId);
+    if (!reply) {
+      return res.status(404).json({ success: false, message: 'Reply not found' });
+    }
+    reply.deleteOne();
+    await post.save();
+    res.json({ success: true, message: 'Reply deleted' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to delete reply' });
   }
 });
 

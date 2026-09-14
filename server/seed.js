@@ -348,6 +348,25 @@ async function seedResources(usersByKey) {
   }
 }
 
+// Posts/replies created before the moderation `status` field was added have
+// no status stored at all, which would make them fail the new `status:
+// 'Approved'` filter and vanish from the UI. Backfill them as approved since
+// they were already vetted seed content.
+async function backfillPostStatus() {
+  const postResult = await Post.updateMany(
+    { status: { $exists: false } },
+    { $set: { status: 'Approved' } }
+  );
+  const replyResult = await Post.updateMany(
+    { 'replies.status': { $exists: false } },
+    { $set: { 'replies.$[r].status': 'Approved' } },
+    { arrayFilters: [{ 'r.status': { $exists: false } }] }
+  );
+  if (postResult.modifiedCount || replyResult.modifiedCount) {
+    console.log(`Backfilled status on ${postResult.modifiedCount} post(s) and ${replyResult.modifiedCount} post(s)-with-replies.`);
+  }
+}
+
 async function main() {
   if (!process.env.MONGODB_URI) {
     throw new Error('MONGODB_URI is not set');
@@ -360,6 +379,8 @@ async function main() {
   await seedTopicsAndPosts(usersByKey);
   console.log('');
   await seedResources(usersByKey);
+  console.log('');
+  await backfillPostStatus();
 
   console.log('\nDone. Seed admin login: seed.community@example.com / SeedUser123!');
   console.log('Rotate or remove seed accounts before onboarding real users.');

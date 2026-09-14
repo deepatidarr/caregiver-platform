@@ -43,6 +43,11 @@ const postSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  status: {
+    type: String,
+    enum: ['Pending', 'Approved'],
+    default: 'Pending'
+  },
   embedding: {
     type: [Number],
     default: undefined
@@ -70,6 +75,11 @@ const postSchema = new mongoose.Schema({
     likeCount: {
       type: Number,
       default: 0
+    },
+    status: {
+      type: String,
+      enum: ['Pending', 'Approved'],
+      default: 'Pending'
     }
   }]
 });
