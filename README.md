@@ -5,10 +5,10 @@ A community platform for single caregivers to connect, share resources, and get 
 ## Features
 
 - **Home**: personalized welcome hero with rotating community slogans and quick links into the other tabs
-- **Discussions**: topic-based community forums with replies and likes; non-admins can request new topics
+- **Discussions**: topic-based community forums with replies and likes; non-admins can request new topics. Posts and replies from non-admin users require admin approval before they're publicly visible
 - **Resources**: admin-curated links and guides
 - **AI Support Chat**: RAG-powered chatbot that answers questions using real community posts and resources
-- **Admin tab**: visible only to users with `admin: true`; review, approve, reject, or request edits on topic requests submitted by other users
+- **Admin tab**: visible only to users with `admin: true`; review/approve/reject topic requests, moderate (approve or delete) pending posts and replies, and delete any already-approved post or reply
 
 ## Live Environment
 
@@ -176,6 +176,12 @@ users — this is placeholder content, not meant to ship to production long-term
 
 A running log of what's been done in this project so far, most recent first:
 
+- **Post/reply moderation**: new posts and replies from non-admin users now default to
+  `Pending` and are hidden from everyone but their author until an admin approves them
+  in the Admin tab (`AdminPostModerationList`); admin-authored posts/replies are
+  auto-approved. Admins can also delete any post or reply — pending or already
+  approved — directly. Backend endpoints: `GET /api/discussions/moderation/pending`,
+  `POST .../posts/:id/approve`, `DELETE .../posts/:id`, and the reply equivalents.
 - **Admin tab**: moved topic-request review/approve/reject out of the Discussions tab
   into a dedicated "Admin" tab in the main nav, visible only to `admin: true` users.
 - **Seed script**: added `server/seed.js` (see [Seed / Test Data](#seed--test-data)
