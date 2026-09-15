@@ -168,9 +168,9 @@ already exists by email/name/title. It creates:
 MONGODB_URI=<your connection string> npm run seed
 ```
 
-**Admin test login** (created by the seed script): `seed.community@example.com` /
-`SeedUser123!`. Rotate the password or delete the seed accounts before onboarding real
-users — this is placeholder content, not meant to ship to production long-term.
+**Admin login**: `caregiverplatform@gmail.com` / `Caregiver12#`. The other four seed
+personas (Maria, James, Aisha, David) share the password `SeedUser123!` — rotate or
+delete all of these before onboarding real users, they're placeholder content.
 
 ## Recent Work Log
 

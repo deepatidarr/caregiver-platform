@@ -14,13 +14,15 @@ import Resource from './models/Resource.js';
 dotenv.config();
 
 const SEED_PASSWORD = 'SeedUser123!';
+const ADMIN_EMAIL = 'caregiverplatform@gmail.com';
+const ADMIN_PASSWORD = 'Caregiver12#';
 
 const SEED_USERS = [
   {
     key: 'community',
     name: 'Community Team',
-    email: 'seed.community@example.com',
-    password: SEED_PASSWORD,
+    email: ADMIN_EMAIL,
+    password: ADMIN_PASSWORD,
     age: 30,
     caregiverType: 'parent',
     familyInfo: { numberOfKids: 1, kidsAgeGroups: ['4-6'], additionalInfo: 'Platform account for official announcements and curated resources.' },
@@ -382,7 +384,7 @@ async function main() {
   console.log('');
   await backfillPostStatus();
 
-  console.log('\nDone. Seed admin login: seed.community@example.com / SeedUser123!');
+  console.log(`\nDone. Admin login: ${ADMIN_EMAIL} / ${ADMIN_PASSWORD}`);
   console.log('Rotate or remove seed accounts before onboarding real users.');
   await mongoose.disconnect();
 }
