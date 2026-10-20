@@ -19,14 +19,24 @@ export default function LandingPage() {
     <div className="min-h-screen w-full bg-brand-gradient flex flex-col">
 
       {/* Navbar */}
-      <nav className="sticky top-0 z-40 bg-white/10 backdrop-blur-sm border-b border-white/20 px-6 py-4 flex items-center justify-between">
+      <nav className="sticky top-0 z-40 bg-white/10 backdrop-blur-sm border-b border-white/20 px-6 py-4 flex items-center justify-between gap-3">
         <span className="text-white text-xl font-bold tracking-tight">CaregiverConnect</span>
-        <Link
-          to="/login"
-          className="bg-white text-[#667eea] font-semibold rounded-lg px-5 py-2.5 text-sm hover:bg-white/90 hover:shadow-md transition-all"
-        >
-          Login / Sign Up
-        </Link>
+        <div className="flex items-center gap-3">
+          <a
+            href="/caregiverconnect-guide.pdf"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-white/90 font-semibold text-sm hover:text-white hover:underline transition-colors"
+          >
+            View Documentation
+          </a>
+          <Link
+            to="/login"
+            className="bg-white text-[#667eea] font-semibold rounded-lg px-5 py-2.5 text-sm hover:bg-white/90 hover:shadow-md transition-all"
+          >
+            Login / Sign Up
+          </Link>
+        </div>
       </nav>
 
       {/* Hero */}
