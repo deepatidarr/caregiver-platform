@@ -150,7 +150,7 @@ const HomePage = () => {
       <nav className="bg-white shadow-sm sticky top-0 z-40">
         <div className="w-full px-4 sm:px-6 lg:px-8 py-3 flex justify-between items-center gap-2">
           <h1 className="text-gray-800 text-lg sm:text-2xl font-bold m-0 shrink-0">
-            Caregiver Platform
+            CaregiverConnect<span className="hidden sm:inline">: Families without Borders</span>
           </h1>
           <div className="flex items-center gap-2 sm:gap-3">
             <span className="hidden sm:inline text-gray-600 font-medium text-sm">
@@ -209,7 +209,7 @@ const HomePage = () => {
               <div className="absolute -bottom-12 -left-8 w-48 h-48 bg-white/10 rounded-full blur-2xl pointer-events-none" />
               <div className="relative text-center">
                 <p className="uppercase tracking-widest text-xs sm:text-sm font-semibold text-blue-100 mb-2">
-                  Caregiver Platform
+                  CaregiverConnect
                 </p>
                 <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3">
                   Welcome back, {user.alias || user.name}! 👋

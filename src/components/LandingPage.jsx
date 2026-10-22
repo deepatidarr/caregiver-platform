@@ -20,7 +20,9 @@ export default function LandingPage() {
 
       {/* Navbar */}
       <nav className="sticky top-0 z-40 bg-white/10 backdrop-blur-sm border-b border-white/20 px-6 py-4 flex items-center justify-between gap-3">
-        <span className="text-white text-xl font-bold tracking-tight">CaregiverConnect</span>
+        <span className="text-white text-xl font-bold tracking-tight">
+          CaregiverConnect<span className="hidden sm:inline">: Families without Borders</span>
+        </span>
         <div className="flex items-center gap-3">
           <a
             href="/caregiverconnect-guide.pdf"
@@ -125,7 +127,7 @@ export default function LandingPage() {
 
       {/* Footer */}
       <footer className="mt-auto text-center py-6 text-white/50 text-sm">
-        © 2026 CaregiverConnect. A safe space for caregivers.
+        © 2026 CaregiverConnect: Families without Borders. A safe space for caregivers.
       </footer>
 
     </div>
